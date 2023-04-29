@@ -4,7 +4,14 @@ import gearth.extensions.parsers.HEntity;
 import gearth.protocol.HMessage;
 import gearth.protocol.HPacket;
 import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.scene.control.*;
+import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.TransferMode;
+import javafx.scene.paint.Color;
+
 import javax.swing.*;
 import java.util.Map;
 import java.util.TreeMap;
@@ -87,9 +94,10 @@ public class GHandItemChooser extends ExtensionForm {
         freezeFridgeIdToNameItem.put(39, "Pineapple"); // Piña
     }
 
-    /*Timer timerUseFurniture = new Timer(Integer.parseInt(txtDelay.getText()), e -> {
-        sendToServer(new HPacket("UseFurniture", HMessage.Direction.TOSERVER, Integer.parseInt(txtFurniId.getText()), 0));
-    });*/
+    public ListView <String> listViewShopping;
+
+    public Button buttonAddItem;
+
 
     @Override
     protected void onShow() { // When you open the extension!
@@ -108,13 +116,19 @@ public class GHandItemChooser extends ExtensionForm {
         buttonIntercept.setOnAction(event -> {
             if(buttonIntercept.getText().equals("OFF!")){
                 if(!txtFurniId.getText().equals("")){
-                    buttonIntercept.setText("ON!");
+                    buttonIntercept.setText("ON!"); buttonIntercept.setTextFill(Color.GREEN);
                     timerUseFurniture.start();
                 }
             }
             else {
-                buttonIntercept.setText("OFF!");
-                timerUseFurniture.stop();
+                turnOffButton();
+            }
+        });
+
+        buttonAddItem.setOnAction(event -> {
+            String currentValue = choiceBoxItems.getValue();
+            if(currentValue != null && !listViewShopping.getItems().contains(currentValue)){
+                listViewShopping.getItems().add(choiceBoxItems.getValue());
             }
         });
 
@@ -174,39 +188,42 @@ public class GHandItemChooser extends ExtensionForm {
                 }*/
                 if(currentUserIndex == yourIndex){
                     if(checkShowItemId.isSelected()){
-                        sendToClient(new HPacket("{in:Chat}{i:-1}{s:\"itemId: " + itemId+"\"}{i:0}{i:0}{i:0}{i:0}"));
+                        sendToClient(new HPacket("{in:Chat}{i:-1}{s:\"itemId: " + itemId + "\"}{i:0}{i:0}{i:0}{i:0}"));
                     }
+
+                    String nameItem = blackHoleIdToNameItem.get(itemId);
                     if(radioBlackHole.isSelected()){
-                        if(blackHoleIdToNameItem.get(itemId).equals(choiceBoxItems.getValue())){
-                            sendToClient(new HPacket("{in:Chat}{i:-1}{s:\"You got!: " + choiceBoxItems.getValue()+"\"}{i:0}{i:0}{i:0}{i:0}"));
-                            Platform.runLater(()-> buttonIntercept.setText("OFF!"));
-                            timerUseFurniture.stop();
+                        // blackHoleIdToNameItem.get(itemId).equals(choiceBoxItems.getValue())
+                        if(listViewShopping.getItems().contains(nameItem)){
+                            sendToClient(new HPacket("{in:Chat}{i:-1}{s:\"You got!: " + nameItem + "\"}{i:0}{i:0}{i:0}{i:0}"));
+                            Platform.runLater(this::turnOffButton);
                         }
                     }
                     else if(radioNormalFridge.isSelected()){
-                        if(normalFridgeIdToNameItem.get(itemId).equals(choiceBoxItems.getValue())){
-                            sendToClient(new HPacket("{in:Chat}{i:-1}{s:\"You got!: " + choiceBoxItems.getValue()+"\"}{i:0}{i:0}{i:0}{i:0}"));
-                            Platform.runLater(()-> buttonIntercept.setText("OFF!"));
-                            timerUseFurniture.stop();
+                        if(listViewShopping.getItems().contains(blackHoleIdToNameItem.get(itemId))){
+                            sendToClient(new HPacket("{in:Chat}{i:-1}{s:\"You got!: " + nameItem + "\"}{i:0}{i:0}{i:0}{i:0}"));
+                            Platform.runLater(this::turnOffButton);
                         }
                     }
                     else if(radioFreezeFridge.isSelected()){
-                        if(freezeFridgeIdToNameItem.get(itemId).equals(choiceBoxItems.getValue())){
-                            sendToClient(new HPacket("{in:Chat}{i:-1}{s:\"You got!: " + choiceBoxItems.getValue()+"\"}{i:0}{i:0}{i:0}{i:0}"));
-                            Platform.runLater(()-> buttonIntercept.setText("OFF!"));
-                            timerUseFurniture.stop();
+                        if(listViewShopping.getItems().contains(nameItem)){
+                            sendToClient(new HPacket("{in:Chat}{i:-1}{s:\"You got!: " + nameItem + "\"}{i:0}{i:0}{i:0}{i:0}"));
+                            Platform.runLater(this::turnOffButton);
                         }
                     }
                     else if(radioFlowers.isSelected()){
-                        if(flowersIdToNameItem.get(itemId).equals(choiceBoxItems.getValue())){
-                            sendToClient(new HPacket("{in:Chat}{i:-1}{s:\"You got!: " + choiceBoxItems.getValue()+"\"}{i:0}{i:0}{i:0}{i:0}"));
-                            Platform.runLater(()-> buttonIntercept.setText("OFF!"));
-                            timerUseFurniture.stop();
+                        if(listViewShopping.getItems().contains(nameItem)){
+                            sendToClient(new HPacket("{in:Chat}{i:-1}{s:\"You got!: " + nameItem + "\"}{i:0}{i:0}{i:0}{i:0}"));
+                            Platform.runLater(this::turnOffButton);
                         }
                     }
                 }
             }catch (NullPointerException exception){ System.out.println("Exception here!");}
         });
+    }
+
+    public void turnOffButton(){
+        buttonIntercept.setText("OFF!");    buttonIntercept.setTextFill(Color.RED); timerUseFurniture.stop();
     }
 
     public void handleRadioButtonChanged() {
