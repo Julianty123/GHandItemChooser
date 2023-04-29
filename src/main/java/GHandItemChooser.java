@@ -5,6 +5,9 @@ import gearth.protocol.HMessage;
 import gearth.protocol.HPacket;
 import javafx.application.Platform;
 import javafx.scene.control.*;
+import javafx.scene.input.ClipboardContent;
+import javafx.scene.input.Dragboard;
+import javafx.scene.input.TransferMode;
 import javafx.scene.paint.Color;
 
 import javax.swing.*;
@@ -21,7 +24,6 @@ import java.util.TreeMap;
 
 public class GHandItemChooser extends ExtensionForm {
     public Button buttonIntercept;
-    public ChoiceBox<String> choiceBoxItems;
     public TextField txtFurniId, txtDelay;
     public CheckBox checkFurniId, checkShowItem;
     public RadioButton radioBlackHole, radioNormalFridge, radioFreezeFridge, radioFlowers;
@@ -91,7 +93,11 @@ public class GHandItemChooser extends ExtensionForm {
 
     public ListView <String> listViewShopping;
 
-    public Button buttonAddItem;
+    public ListView<String> listViewToBuy;
+
+
+    public Button buttonDeleteItem;
+    int currentIndexSelected = -1;
 
 
     @Override
@@ -108,6 +114,32 @@ public class GHandItemChooser extends ExtensionForm {
 
     @Override
     protected void initExtension() { // When you install the extension or connected G-Earth to habbo
+        listViewShopping.setOnDragDetected(event -> {
+            Dragboard db = listViewShopping.startDragAndDrop(TransferMode.MOVE);
+            ClipboardContent content = new ClipboardContent();
+            content.putString(listViewShopping.getSelectionModel().getSelectedItem());
+            db.setContent(content);
+            event.consume();
+        });
+
+        listViewToBuy.setOnDragOver(event -> {
+            if (event.getGestureSource() != listViewToBuy && event.getDragboard().hasString()) {
+                event.acceptTransferModes(TransferMode.MOVE);
+            }
+            event.consume();
+        });
+
+        listViewToBuy.setOnDragDropped(event -> {
+            Dragboard db = event.getDragboard();
+            boolean success = false;
+            if(!listViewToBuy.getItems().contains(db.getString())){
+                listViewToBuy.getItems().add(db.getString());
+                success = true;
+            }
+            event.setDropCompleted(success);
+            event.consume();
+        });
+
         buttonIntercept.setOnAction(event -> {
             if(buttonIntercept.getText().equals("OFF!")){
                 if(!txtFurniId.getText().equals("")){
@@ -120,10 +152,14 @@ public class GHandItemChooser extends ExtensionForm {
             }
         });
 
-        buttonAddItem.setOnAction(event -> {
-            String currentValue = choiceBoxItems.getValue();
-            if(currentValue != null && !listViewShopping.getItems().contains(currentValue)){
-                listViewShopping.getItems().add(choiceBoxItems.getValue());
+        listViewToBuy.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            currentIndexSelected = listViewToBuy.getSelectionModel().getSelectedIndex();
+            System.out.println(currentIndexSelected); // Al parecer depsues de eliminado un item hay un bug, podria buscar como manejarlo
+        });
+
+        buttonDeleteItem.setOnAction(event -> {
+            if(currentIndexSelected != -1){
+                listViewToBuy.getItems().remove(currentIndexSelected);  currentIndexSelected = -1;
             }
         });
 
@@ -189,25 +225,25 @@ public class GHandItemChooser extends ExtensionForm {
 
                     if(radioBlackHole.isSelected()){
                         // blackHoleIdToNameItem.get(itemId).equals(choiceBoxItems.getValue())
-                        if(listViewShopping.getItems().contains(nameItem)){
+                        if(listViewToBuy.getItems().contains(nameItem)){
                             sendToClient(new HPacket("{in:Chat}{i:-1}{s:\"You got!: " + nameItem + "\"}{i:0}{i:0}{i:0}{i:0}"));
                             Platform.runLater(this::turnOffButton);
                         }
                     }
                     else if(radioNormalFridge.isSelected()){
-                        if(listViewShopping.getItems().contains(blackHoleIdToNameItem.get(itemId))){
+                        if(listViewToBuy.getItems().contains(blackHoleIdToNameItem.get(itemId))){
                             sendToClient(new HPacket("{in:Chat}{i:-1}{s:\"You got!: " + nameItem + "\"}{i:0}{i:0}{i:0}{i:0}"));
                             Platform.runLater(this::turnOffButton);
                         }
                     }
                     else if(radioFreezeFridge.isSelected()){
-                        if(listViewShopping.getItems().contains(nameItem)){
+                        if(listViewToBuy.getItems().contains(nameItem)){
                             sendToClient(new HPacket("{in:Chat}{i:-1}{s:\"You got!: " + nameItem + "\"}{i:0}{i:0}{i:0}{i:0}"));
                             Platform.runLater(this::turnOffButton);
                         }
                     }
                     else if(radioFlowers.isSelected()){
-                        if(listViewShopping.getItems().contains(nameItem)){
+                        if(listViewToBuy.getItems().contains(nameItem)){
                             sendToClient(new HPacket("{in:Chat}{i:-1}{s:\"You got!: " + nameItem + "\"}{i:0}{i:0}{i:0}{i:0}"));
                             Platform.runLater(this::turnOffButton);
                         }
@@ -222,27 +258,25 @@ public class GHandItemChooser extends ExtensionForm {
     }
 
     public void handleRadioButtonChanged() {
-        /*choiceBoxItems.getItems().forEach(item->{
-            System.out.println("item");
-        });*/
-        choiceBoxItems.getItems().clear();
+        listViewShopping.getItems().clear();
         if(radioBlackHole.isSelected()){
-            for (Map.Entry<Integer, String> entry : blackHoleIdToNameItem.entrySet()) { // Itera claves y valores de un Map!
-                choiceBoxItems.getItems().add(entry.getValue());
+            for (Map.Entry<Integer, String> entry : blackHoleIdToNameItem.entrySet()) {
+                listViewShopping.getItems().add(entry.getValue());
             }
         }
         else if(radioNormalFridge.isSelected()){
             for (Map.Entry<Integer, String> entry : normalFridgeIdToNameItem.entrySet()) {
-                choiceBoxItems.getItems().add(entry.getValue());    // entry.getKey();
-            }        }
+                listViewShopping.getItems().add(entry.getValue());
+            }
+        }
         else if(radioFreezeFridge.isSelected()){
             for (Map.Entry<Integer, String> entry : freezeFridgeIdToNameItem.entrySet()) {
-                choiceBoxItems.getItems().add(entry.getValue());
+                listViewShopping.getItems().add(entry.getValue());
             }
         }
         else if(radioFlowers.isSelected()){
             for (Map.Entry<Integer, String> entry : flowersIdToNameItem.entrySet()) {
-                choiceBoxItems.getItems().add(entry.getValue());
+                listViewShopping.getItems().add(entry.getValue());
             }
         }
     }
