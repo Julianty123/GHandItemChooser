@@ -12,6 +12,7 @@ import javafx.scene.paint.Color;
 
 import javax.swing.*;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeMap;
 
 @ExtensionInfo(
@@ -42,6 +43,7 @@ public class GHandItemChooser extends ExtensionForm {
         blackHoleIdToNameItem.put(36, "Pear"); // Pera
         blackHoleIdToNameItem.put(37, "Peach"); // Durazno
         blackHoleIdToNameItem.put(38, "Orange");
+        blackHoleIdToNameItem.put(39, "Orange"); // It's repeated, why?
         blackHoleIdToNameItem.put(58, "Blood cup");
         blackHoleIdToNameItem.put(70, "Chicken thigh");
         blackHoleIdToNameItem.put(71, "Toast"); // Pan tajado
@@ -58,6 +60,7 @@ public class GHandItemChooser extends ExtensionForm {
         blackHoleIdToNameItem.put(1036, "Rubber duck"); // Pato de goma
         blackHoleIdToNameItem.put(1037, "Cobra (Snake)");
         blackHoleIdToNameItem.put(1038, "Pau");
+        blackHoleIdToNameItem.put(1051, "Brush");
     }
 
     private static final TreeMap<Integer, String> flowersIdToNameItem = new TreeMap<>();
@@ -211,6 +214,9 @@ public class GHandItemChooser extends ExtensionForm {
         intercept(HMessage.Direction.TOCLIENT, "CarryObject", hMessage -> {
             int currentUserIndex = hMessage.getPacket().readInteger();  // Important to detect who took the item
             int itemId = hMessage.getPacket().readInteger();
+
+            System.out.println("itemId: " + itemId);
+
             try{ // This is for avoid any exception
                 /* Look this... after!
                 RadioButton[] radioButtons = new RadioButton[]{radioBlackHole, radioNormalFridge, radioFreezeFridge, radioFlowers};
@@ -221,6 +227,11 @@ public class GHandItemChooser extends ExtensionForm {
                     String nameItem = blackHoleIdToNameItem.get(itemId);
                     if(checkShowItem.isSelected()){
                         sendToClient(new HPacket("{in:Chat}{i:-1}{s:\"nameItem: " + nameItem + "\"}{i:0}{i:0}{i:0}{i:0}"));
+
+                        // For testing purposes
+                        if(nameItem == null){
+                            Platform.runLater(this::turnOffButton);
+                        }
                     }
 
                     if(radioBlackHole.isSelected()){

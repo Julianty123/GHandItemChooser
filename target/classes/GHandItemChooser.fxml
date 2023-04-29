@@ -8,8 +8,9 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Text?>
 
-<AnchorPane prefHeight="226.0" prefWidth="636.0" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1" fx:controller="GHandItemChooser">
+<AnchorPane prefHeight="223.0" prefWidth="636.0" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1" fx:controller="GHandItemChooser">
     <Button fx:id="buttonIntercept" layoutX="28.0" layoutY="128.0" mnemonicParsing="false" prefHeight="81.0" prefWidth="107.0" text="OFF!" textFill="RED" />
     <TextField fx:id="txtFurniId" alignment="CENTER" editable="false" layoutX="23.0" layoutY="84.0" prefHeight="31.0" prefWidth="118.0" promptText="Double click" />
     <CheckBox fx:id="checkFurniId" layoutX="157.0" layoutY="89.0" mnemonicParsing="false" text="Get Furni Id" />
@@ -24,9 +25,10 @@
     <RadioButton fx:id="radioNormalFridge" layoutX="153.0" layoutY="21.0" mnemonicParsing="false" onAction="#handleRadioButtonChanged" text="Normal Fridge" toggleGroup="$f" />
     <RadioButton fx:id="radioFreezeFridge" layoutX="163.0" layoutY="50.0" mnemonicParsing="false" onAction="#handleRadioButtonChanged" text="Freeze Fridge" toggleGroup="$f" />
     <CheckBox fx:id="checkShowItem" layoutX="157.0" layoutY="180.0" mnemonicParsing="false" text="Show current item" />
-   <ListView fx:id="listViewShopping" layoutX="291.0" layoutY="33.0" prefHeight="142.0" prefWidth="158.0" />
-   <Button fx:id="buttonDeleteItem" layoutX="502.0" layoutY="185.0" mnemonicParsing="false" text="Delete item" />
-   <ListView fx:id="listViewToBuy" layoutX="465.0" layoutY="33.0" prefHeight="142.0" prefWidth="158.0" />
+   <ListView fx:id="listViewShopping" layoutX="291.0" layoutY="33.0" prefHeight="142.0" prefWidth="134.0" />
+   <Button fx:id="buttonDeleteItem" layoutX="501.0" layoutY="185.0" mnemonicParsing="false" text="Delete item" />
+   <ListView fx:id="listViewToBuy" layoutX="473.0" layoutY="33.0" prefHeight="142.0" prefWidth="134.0" />
    <Label layoutX="291.0" layoutY="12.0" text="Shopping" />
-   <Label layoutX="465.0" layoutY="12.0" text="To Buy" />
+   <Label layoutX="473.0" layoutY="12.0" text="To Buy" />
+   <Text layoutX="428.0" layoutY="120.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Drag-&gt;" />
 </AnchorPane>
