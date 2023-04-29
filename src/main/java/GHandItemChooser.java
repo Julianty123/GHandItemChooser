@@ -4,12 +4,7 @@ import gearth.extensions.parsers.HEntity;
 import gearth.protocol.HMessage;
 import gearth.protocol.HPacket;
 import javafx.application.Platform;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.scene.control.*;
-import javafx.scene.input.ClipboardContent;
-import javafx.scene.input.Dragboard;
-import javafx.scene.input.TransferMode;
 import javafx.scene.paint.Color;
 
 import javax.swing.*;
@@ -28,7 +23,7 @@ public class GHandItemChooser extends ExtensionForm {
     public Button buttonIntercept;
     public ChoiceBox<String> choiceBoxItems;
     public TextField txtFurniId, txtDelay;
-    public CheckBox checkFurniId, checkShowItemId;
+    public CheckBox checkFurniId, checkShowItem;
     public RadioButton radioBlackHole, radioNormalFridge, radioFreezeFridge, radioFlowers;
 
     public Timer timerUseFurniture;
@@ -187,11 +182,11 @@ public class GHandItemChooser extends ExtensionForm {
                     radioButton.
                 }*/
                 if(currentUserIndex == yourIndex){
-                    if(checkShowItemId.isSelected()){
-                        sendToClient(new HPacket("{in:Chat}{i:-1}{s:\"itemId: " + itemId + "\"}{i:0}{i:0}{i:0}{i:0}"));
+                    String nameItem = blackHoleIdToNameItem.get(itemId);
+                    if(checkShowItem.isSelected()){
+                        sendToClient(new HPacket("{in:Chat}{i:-1}{s:\"nameItem: " + nameItem + "\"}{i:0}{i:0}{i:0}{i:0}"));
                     }
 
-                    String nameItem = blackHoleIdToNameItem.get(itemId);
                     if(radioBlackHole.isSelected()){
                         // blackHoleIdToNameItem.get(itemId).equals(choiceBoxItems.getValue())
                         if(listViewShopping.getItems().contains(nameItem)){

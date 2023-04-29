@@ -25,7 +25,7 @@
     <RadioButton fx:id="radioFlowers" layoutX="44.0" layoutY="60.0" mnemonicParsing="false" onAction="#handleRadioButtonChanged" text="French Flowers" toggleGroup="$f" />
     <RadioButton fx:id="radioNormalFridge" layoutX="174.0" layoutY="25.0" mnemonicParsing="false" onAction="#handleRadioButtonChanged" text="Normal Fridge" toggleGroup="$f" />
     <RadioButton fx:id="radioFreezeFridge" layoutX="189.0" layoutY="60.0" mnemonicParsing="false" onAction="#handleRadioButtonChanged" text="Freeze Fridge" toggleGroup="$f" />
-    <CheckBox fx:id="checkShowItemId" layoutX="158.0" layoutY="205.0" mnemonicParsing="false" text="Show current itemid" />
+    <CheckBox fx:id="checkShowItem" layoutX="158.0" layoutY="205.0" mnemonicParsing="false" text="Show current item" />
    <ListView fx:id="listViewShopping" layoutX="311.0" layoutY="65.0" prefHeight="162.0" prefWidth="174.0" />
    <Button fx:id="buttonAddItem" layoutX="448.0" layoutY="21.0" mnemonicParsing="false" text="Add item" />
 </AnchorPane>
