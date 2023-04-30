@@ -229,35 +229,12 @@ public class GHandItemChooser extends ExtensionForm {
                         sendToClient(new HPacket("{in:Chat}{i:-1}{s:\"nameItem: " + nameItem + "\"}{i:0}{i:0}{i:0}{i:0}"));
 
                         // For testing purposes
-                        if(nameItem == null){
-                            Platform.runLater(this::turnOffButton);
-                        }
+                        // if(nameItem == null){ Platform.runLater(this::turnOffButton); }
                     }
 
-                    if(radioBlackHole.isSelected()){
-                        // blackHoleIdToNameItem.get(itemId).equals(choiceBoxItems.getValue())
-                        if(listViewToBuy.getItems().contains(nameItem)){
-                            sendToClient(new HPacket("{in:Chat}{i:-1}{s:\"You got!: " + nameItem + "\"}{i:0}{i:0}{i:0}{i:0}"));
-                            Platform.runLater(this::turnOffButton);
-                        }
-                    }
-                    else if(radioNormalFridge.isSelected()){
-                        if(listViewToBuy.getItems().contains(blackHoleIdToNameItem.get(itemId))){
-                            sendToClient(new HPacket("{in:Chat}{i:-1}{s:\"You got!: " + nameItem + "\"}{i:0}{i:0}{i:0}{i:0}"));
-                            Platform.runLater(this::turnOffButton);
-                        }
-                    }
-                    else if(radioFreezeFridge.isSelected()){
-                        if(listViewToBuy.getItems().contains(nameItem)){
-                            sendToClient(new HPacket("{in:Chat}{i:-1}{s:\"You got!: " + nameItem + "\"}{i:0}{i:0}{i:0}{i:0}"));
-                            Platform.runLater(this::turnOffButton);
-                        }
-                    }
-                    else if(radioFlowers.isSelected()){
-                        if(listViewToBuy.getItems().contains(nameItem)){
-                            sendToClient(new HPacket("{in:Chat}{i:-1}{s:\"You got!: " + nameItem + "\"}{i:0}{i:0}{i:0}{i:0}"));
-                            Platform.runLater(this::turnOffButton);
-                        }
+                    if(listViewToBuy.getItems().contains(nameItem)){
+                        sendToClient(new HPacket("{in:Chat}{i:-1}{s:\"You got!: " + nameItem + "\"}{i:0}{i:0}{i:0}{i:0}"));
+                        Platform.runLater(this::turnOffButton);
                     }
                 }
             }catch (NullPointerException exception){ System.out.println("Exception here!");}
