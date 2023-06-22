@@ -3,6 +3,7 @@ import gearth.extensions.ExtensionInfo;
 import gearth.extensions.parsers.HEntity;
 import gearth.protocol.HMessage;
 import gearth.protocol.HPacket;
+
 import javafx.application.Platform;
 import javafx.scene.control.*;
 import javafx.scene.input.ClipboardContent;
@@ -11,19 +12,20 @@ import javafx.scene.input.TransferMode;
 import javafx.scene.paint.Color;
 
 import javax.swing.*;
+
 import java.util.Map;
-import java.util.Objects;
 import java.util.TreeMap;
 
 @ExtensionInfo(
         Title = "GHandItemChooser",
         Description = "Developed by doraemon in Python", // (Initially)
-        Version = "1.0.0",
+        Version = "1.1.0",
         Author = "Julianty"
 )
 
 
-public class GHandItemChooser extends ExtensionForm {
+public class GHandItemChooser extends ExtensionForm{
+
     public Button buttonIntercept;
     public TextField txtFurniId, txtDelay;
     public CheckBox checkFurniId, checkShowItem;
@@ -117,6 +119,7 @@ public class GHandItemChooser extends ExtensionForm {
 
     @Override
     protected void initExtension() { // When you install the extension or connected G-Earth to habbo
+
         listViewShopping.setOnDragDetected(event -> {
             Dragboard db = listViewShopping.startDragAndDrop(TransferMode.MOVE);
             ClipboardContent content = new ClipboardContent();
@@ -157,12 +160,12 @@ public class GHandItemChooser extends ExtensionForm {
 
         listViewToBuy.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
             currentIndexSelected = listViewToBuy.getSelectionModel().getSelectedIndex();
-            System.out.println(currentIndexSelected); // Al parecer depsues de eliminado un item hay un bug, podria buscar como manejarlo
         });
 
         buttonDeleteItem.setOnAction(event -> {
             if(currentIndexSelected != -1){
-                listViewToBuy.getItems().remove(currentIndexSelected);  currentIndexSelected = -1;
+                listViewToBuy.getItems().remove(currentIndexSelected); // The getSelectionModel() event will be fired
+                listViewToBuy.getSelectionModel().select(-1);
             }
         });
 
