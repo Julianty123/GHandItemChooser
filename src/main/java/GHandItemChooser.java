@@ -1,6 +1,8 @@
 import gearth.extensions.ExtensionForm;
 import gearth.extensions.ExtensionInfo;
 import gearth.extensions.parsers.HEntity;
+import gearth.extensions.parsers.HEntityUpdate;
+import gearth.extensions.parsers.HPoint;
 import gearth.protocol.HMessage;
 import gearth.protocol.HPacket;
 
@@ -27,7 +29,7 @@ import java.util.TreeMap;
 public class GHandItemChooser extends ExtensionForm{
 
     public Button buttonIntercept;
-    public TextField txtFurniId, txtDelay;
+    public TextField txtDelay;
     public CheckBox checkFurniId, checkShowItem;
     public RadioButton radioBlackHole, radioNormalFridge, radioFreezeFridge, radioFlowers;
 
@@ -102,6 +104,11 @@ public class GHandItemChooser extends ExtensionForm{
 
 
     public Button buttonDeleteItem;
+    public CheckBox checkStartPoint, checkEndPoint, checkDoorId;
+
+    int furniIdSelected = -1;
+    public HPoint startPoint = new HPoint(-1, -1), endPoint = new HPoint(-1, -1);
+    public int doorId = -1;
     int currentIndexSelected = -1;
 
 
@@ -109,7 +116,10 @@ public class GHandItemChooser extends ExtensionForm{
     protected void onShow() { // When you open the extension!
         sendToServer(new HPacket("AvatarExpression", HMessage.Direction.TOSERVER, 0)); // When its sent, get AvatarExpression packet
         sendToServer(new HPacket("InfoRetrieve", HMessage.Direction.TOSERVER)); // When its sent, get UserObject packet
-        timerUseFurniture = new Timer(Integer.parseInt(txtDelay.getText()), e -> sendToServer(new HPacket("{out:UseFurniture}{i:"+txtFurniId.getText()+"}{i:0}")));
+
+        timerUseFurniture = new Timer(Integer.parseInt(txtDelay.getText()), e -> {
+            sendToServer(new HPacket(String.format("{out:UseFurniture}{i:%s}{i:0}", furniIdSelected)));
+        });
     }
 
     @Override
@@ -148,9 +158,8 @@ public class GHandItemChooser extends ExtensionForm{
 
         buttonIntercept.setOnAction(event -> {
             if(buttonIntercept.getText().equals("OFF!")){
-                if(!txtFurniId.getText().equals("")){
+                if(furniIdSelected != -1){
                     buttonIntercept.setText("ON!"); buttonIntercept.setTextFill(Color.GREEN);
-                    timerUseFurniture.start();
                 }
             }
             else {
@@ -205,12 +214,67 @@ public class GHandItemChooser extends ExtensionForm{
             } catch (Exception e) { e.printStackTrace(); }
         });
 
-        intercept(HMessage.Direction.TOSERVER, "UseFurniture", hMessage -> {
+        intercept(HMessage.Direction.TOCLIENT, "UserUpdate", hMessage -> {
+            HPacket hPacket = hMessage.getPacket();
+            for (HEntityUpdate hEntityUpdate: HEntityUpdate.parse(hPacket)){
+                int currentIndex = hEntityUpdate.getIndex();
+                HPoint currentPosition = hEntityUpdate.getMovingTo();
+                if(yourIndex == currentIndex && currentPosition != null){
+                    if(currentPosition.getX() == endPoint.getX() && currentPosition.getY() == endPoint.getY()){
+                        timerUseFurniture.setInitialDelay(0); // Inicia inmediatamente el timer
+                        timerUseFurniture.start();
+                    }
+                }
+            }
+        });
+
+        intercept(HMessage.Direction.TOSERVER, "ClickFurni", hMessage -> {
+            int furnitureId = hMessage.getPacket().readInteger();
             if(checkFurniId.isSelected()){
-                int FurniId = hMessage.getPacket().readInteger();
-                txtFurniId.setText(String.valueOf(FurniId));
-                hMessage.setBlocked(true);
+                furniIdSelected = furnitureId;
+                Platform.runLater(() -> checkFurniId.setText(String.format("Get Furni Id (%s)", furniIdSelected)));
                 checkFurniId.setSelected(false);
+            }
+            else if(checkDoorId.isSelected()){
+                doorId = furnitureId;
+                Platform.runLater(() -> checkDoorId.setText(String.format("Get Door Id (%s)", doorId)));
+                checkDoorId.setSelected(false);
+            }
+        });
+
+        intercept(HMessage.Direction.TOSERVER, "MoveAvatar", hMessage -> {
+            HPoint hPoint = new HPoint(hMessage.getPacket().readInteger(), hMessage.getPacket().readInteger());
+            if(checkStartPoint.isSelected()){
+                startPoint = hPoint;
+                Platform.runLater(() -> checkStartPoint.setText(String.format("Start Point: (%s, %s)", startPoint.getX(), startPoint.getY())));
+                checkStartPoint.setSelected(false);
+                hMessage.setBlocked(true);
+            }
+            else if(checkEndPoint.isSelected()){
+                endPoint = hPoint;
+                Platform.runLater(() -> checkEndPoint.setText(String.format("End Point: (%s, %s)", endPoint.getX(), endPoint.getY())));
+                checkEndPoint.setSelected(false);
+                hMessage.setBlocked(true);
+            }
+        });
+
+        // Cuando se cambia el estado de un furni mediante wired
+        intercept(HMessage.Direction.TOCLIENT, "ObjectsDataUpdate", hMessage -> {
+            // {in:ObjectsDataUpdate}
+            // {i:8}
+            // {i:2147418981}{i:0}{s:"5"}
+            // {i:2147418286}{i:0}{s:"6"}
+            // {i:2147418215}{i:0}{s:"3"} ...
+
+            int count = hMessage.getPacket().readInteger();
+            for(int i = 0; i < count; i++){
+                int furnitureId = hMessage.getPacket().readInteger();
+                int idk = hMessage.getPacket().readInteger();
+                String state = hMessage.getPacket().readString(); // 0 = cerrado, 1 = abierto para puertas
+
+                if(furnitureId == doorId && state.equals("1")){
+                    sendToServer(new HPacket(String.format("{out:MoveAvatar}{i:%s}{i:%s}", endPoint.getX(), endPoint.getY())));
+                }
             }
         });
 
@@ -218,16 +282,17 @@ public class GHandItemChooser extends ExtensionForm{
             int currentUserIndex = hMessage.getPacket().readInteger();  // Important to detect who took the item
             int itemId = hMessage.getPacket().readInteger();
 
-            System.out.println("itemId: " + itemId);
-
             try{ // This is for avoid any exception
-                /* Look this... after!
-                RadioButton[] radioButtons = new RadioButton[]{radioBlackHole, radioNormalFridge, radioFreezeFridge, radioFlowers};
+                //Look this... after!
+                /*RadioButton[] radioButtons = new RadioButton[]{radioBlackHole, radioNormalFridge, radioFreezeFridge, radioFlowers};
                 for(RadioButton radioButton: radioButtons){
-                    radioButton.
+                    if(radioButton.isSelected()){
+
+                    }
                 }*/
                 if(currentUserIndex == yourIndex){
                     String nameItem = blackHoleIdToNameItem.get(itemId);
+
                     if(checkShowItem.isSelected()){
                         sendToClient(new HPacket("{in:Chat}{i:-1}{s:\"nameItem: " + nameItem + "\"}{i:0}{i:0}{i:0}{i:0}"));
 
@@ -237,7 +302,9 @@ public class GHandItemChooser extends ExtensionForm{
 
                     if(listViewToBuy.getItems().contains(nameItem)){
                         sendToClient(new HPacket("{in:Chat}{i:-1}{s:\"You got!: " + nameItem + "\"}{i:0}{i:0}{i:0}{i:0}"));
+
                         Platform.runLater(this::turnOffButton);
+                        sendToServer(new HPacket(String.format("{out:MoveAvatar}{i:%d}{i:%d}", startPoint.getX(), startPoint.getY())));
                     }
                 }
             }catch (NullPointerException exception){ System.out.println("Exception here!");}
