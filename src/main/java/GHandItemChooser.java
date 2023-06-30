@@ -21,7 +21,7 @@ import java.util.TreeMap;
 @ExtensionInfo(
         Title = "GHandItemChooser",
         Description = "Developed by doraemon in Python", // (Initially)
-        Version = "1.1.0",
+        Version = "1.1.5",
         Author = "Julianty"
 )
 
@@ -282,16 +282,21 @@ public class GHandItemChooser extends ExtensionForm{
             int currentUserIndex = hMessage.getPacket().readInteger();  // Important to detect who took the item
             int itemId = hMessage.getPacket().readInteger();
 
-            try{ // This is for avoid any exception
-                //Look this... after!
-                /*RadioButton[] radioButtons = new RadioButton[]{radioBlackHole, radioNormalFridge, radioFreezeFridge, radioFlowers};
-                for(RadioButton radioButton: radioButtons){
-                    if(radioButton.isSelected()){
-
-                    }
-                }*/
+            try{
                 if(currentUserIndex == yourIndex){
-                    String nameItem = blackHoleIdToNameItem.get(itemId);
+                    String nameItem = null;
+                    if(radioFlowers.isSelected()){
+                        nameItem = flowersIdToNameItem.get(itemId);
+                    }
+                    else if(radioBlackHole.isSelected()){
+                        nameItem = blackHoleIdToNameItem.get(itemId);
+                    }
+                    else if(radioNormalFridge.isSelected()){
+                        nameItem = normalFridgeIdToNameItem.get(itemId);
+                    }
+                    else if(radioFreezeFridge.isSelected()){
+                        nameItem = freezeFridgeIdToNameItem.get(itemId);
+                    }
 
                     if(checkShowItem.isSelected()){
                         sendToClient(new HPacket("{in:Chat}{i:-1}{s:\"nameItem: " + nameItem + "\"}{i:0}{i:0}{i:0}{i:0}"));
