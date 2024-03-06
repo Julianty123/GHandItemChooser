@@ -139,9 +139,8 @@ public class GHandItemChooser extends ExtensionForm{
         });
 
         listViewToBuy.setOnDragOver(event -> {
-            if (event.getGestureSource() != listViewToBuy && event.getDragboard().hasString()) {
+            if (event.getGestureSource() != listViewToBuy && event.getDragboard().hasString())
                 event.acceptTransferModes(TransferMode.MOVE);
-            }
             event.consume();
         });
 
@@ -158,13 +157,11 @@ public class GHandItemChooser extends ExtensionForm{
 
         buttonIntercept.setOnAction(event -> {
             if(buttonIntercept.getText().equals("OFF!")){
-                if(furniIdSelected != -1){
+                if(furniIdSelected != -1)
                     buttonIntercept.setText("ON!"); buttonIntercept.setTextFill(Color.GREEN);
-                }
             }
-            else {
+            else
                 turnOffButton();
-            }
         });
 
         listViewToBuy.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
@@ -196,9 +193,8 @@ public class GHandItemChooser extends ExtensionForm{
         // Response of packet AvatarExpression (get UserIndex without restart room)
         intercept(HMessage.Direction.TOCLIENT, "Expression", hMessage -> {
             // First integer is index in room, second is animation id, i think
-            if(primaryStage.isShowing() && yourIndex == -1){ // this could avoid any bug, i think
+            if(primaryStage.isShowing() && yourIndex == -1)
                 yourIndex = hMessage.getPacket().readInteger();
-            }
         });
 
         // Intercept this packet when you enter or restart a room
@@ -206,10 +202,9 @@ public class GHandItemChooser extends ExtensionForm{
             try {
                 HEntity[] roomUsersList = HEntity.parse(hMessage.getPacket());
                 for (HEntity hEntity: roomUsersList){
-                    if(hEntity.getName().equals(yourName)){    // In another room, the userIndex changes
-                        yourIndex = hEntity.getIndex();      // The userindex has been restarted
-                    }
-                    //System.out.println("stuff: " + Arrays.toString(hEntity.getStuff()));
+                    // In another room, the userIndex changes
+                    if(hEntity.getName().equals(yourName))
+                        yourIndex = hEntity.getIndex();
                 }
             } catch (Exception e) { e.printStackTrace(); }
         });
@@ -258,7 +253,7 @@ public class GHandItemChooser extends ExtensionForm{
             }
         });
 
-        // Cuando se cambia el estado de un furni mediante wired
+        // When the state of furniture is changed by wired
         intercept(HMessage.Direction.TOCLIENT, "ObjectsDataUpdate", hMessage -> {
             // {in:ObjectsDataUpdate}
             // {i:8}
@@ -270,11 +265,10 @@ public class GHandItemChooser extends ExtensionForm{
             for(int i = 0; i < count; i++){
                 int furnitureId = hMessage.getPacket().readInteger();
                 int idk = hMessage.getPacket().readInteger();
-                String state = hMessage.getPacket().readString(); // 0 = cerrado, 1 = abierto para puertas
+                String state = hMessage.getPacket().readString(); // 0 = door closed, 1 = door opened
 
-                if(furnitureId == doorId && state.equals("1")){
+                if(furnitureId == doorId && state.equals("1"))
                     sendToServer(new HPacket(String.format("{out:MoveAvatar}{i:%s}{i:%s}", endPoint.getX(), endPoint.getY())));
-                }
             }
         });
 
